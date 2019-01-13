@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const checkToken = require("../middleware/checkToken");
 
 router.get("/", (req, res, next) => {
   res.status(200).json({
@@ -7,9 +8,10 @@ router.get("/", (req, res, next) => {
   });
 });
 
-router.post("/", (req, res, next) => {
+router.post("/", checkToken, (req, res, next) => {
   res.status(200).json({
-    message: "game-post"
+    message: "game-post",
+    data: req.userData
   });
 });
 

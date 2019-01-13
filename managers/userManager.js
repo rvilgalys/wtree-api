@@ -39,6 +39,7 @@ class UserManager {
     return await newUser.save();
   }
 
+  // creates a new
   async submitUser(user) {
     const testUser = await User.findOne({ userName: user.userName });
     if (!testUser) {
@@ -46,19 +47,27 @@ class UserManager {
       return await this.createNewUser(user);
     }
 
-    console.log(testUser);
-
     const validPassword = await bcrypt.compare(
       user.password,
       testUser.password
     );
-    console.log(validPassword);
+
+    const token = await jwt.sign(
+      { userName: testUser.userName, _id: testUser._id },
+      process.env.JWT_KEY,
+      {
+        expiresIn: "6h"
+      }
+    );
+
     if (!validPassword) {
-      console.log("we should have a valid error!");
       throw new Error(
         "This user exists and was either created without a password or the incorrect password is supplied."
       );
     }
+
+    testUser.password = null; // set this to null before giving it back
+    testUser.token = token;
 
     return testUser;
   }
