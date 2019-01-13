@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 
 const app = express();
 
+// --- Mongoose -> MongoDB Atlas Connection ---
 mongoose
   .connect(
     `mongodb+srv://${process.env.MONGO_USER}:${
@@ -20,16 +21,18 @@ mongoose
   )
   .catch(err => console.log(err));
 
+// *** Server Configuration & Middleware ***
+app.use(morgan("dev")); // morgan is logging middleware -- logs stuff and passes it forward
+app.use(cors()); // enable cors for all origins
+app.use(express.urlencoded({ extended: false })); // config to be able to take json in POST & other requests
+app.use(express.json());
+
+// -### Set up REST API routing ###-
 const baseRoute = require("./api/routes/base");
 const userRoutes = require("./api/routes/users");
 const peopleRoutes = require("./api/routes/people");
 const statsRoutes = require("./api/routes/stats");
 const gameRoutes = require("./api/routes/game");
-
-app.use(morgan("dev")); // morgan is logging middleware -- logs stuff and passes it forward
-app.use(cors()); // enable cors for all origins
-app.use(express.urlencoded({ extended: false })); // config to be able to take json in POST & other requests
-app.use(express.json());
 
 app.use("/", baseRoute);
 app.use("/users", userRoutes);
@@ -37,6 +40,7 @@ app.use("/people", peopleRoutes);
 app.use("/stats", statsRoutes);
 app.use("/game", gameRoutes);
 
+// ### Error Handling ###
 // throw a 404 for anything that doesn't route correctly, forward to next
 app.use((req, res, next) => {
   const error = new Error("no valid route found");
