@@ -10,8 +10,10 @@
   "author": "Rim Vilgalys",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.16.4",
-    "mongoose": "^5.4.3"
+    "mongoose": "^5.4.3",
+    "morgan": "^1.9.1"
   },
   "devDependencies": {
     "eslint": "^5.12.0",
