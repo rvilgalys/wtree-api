@@ -1,0 +1,110 @@
+const axios = require("axios");
+const mongoose = require("mongoose");
+const Person = require("../models/person");
+const cron = require("node-cron");
+
+const sourceUrl = "http://www.willowtreeapps.com/api/v1.0/profiles";
+
+class PeopleManager {
+  constructor() {
+    if (!PeopleManager.instance) {
+      PeopleManager.instance = this;
+      this.peopleCache = [];
+
+      cron.schedule("0 0 0 * * *", async () => {
+        // should run every day at midnight (assuming turnover isn't that frequent haha)
+        await this.refreshPeopleDB();
+        peopleCache = await Person.find();
+      });
+    }
+    return PeopleManager.instance;
+  }
+
+  async refreshPeopleDB() {
+    try {
+      console.log("Starting refresh of people DB from WillowTree API");
+      await Person.deleteMany({}); // clear our existing DB
+      const response = await axios.get(sourceUrl); // fetch from the given JSON
+      const data = Array.from(response.data); // using Array.from() keeps our child objects intact, `new Array()` doesn't
+      data.map(async entry => {
+        // map over only necessary data to the new DB entry
+        // NOTE: we are intentially leaving behind the original ID so that no untrustworthy client could use it
+        const newPerson = new Person({
+          name: `${entry.firstName} ${entry.lastName}`,
+          jobTitle: entry.jobTitle || "",
+          headshot: {
+            _id: mongoose.Types.ObjectId(),
+            mimeType: entry.headshot.mimeType,
+            imageUrl: entry.headshot.url,
+            height: entry.headshot.height,
+            width: entry.headshot.width
+          }
+        });
+        await newPerson.save(); // if we run into problems later here, will have to make sure all of these promises are solved
+      });
+      console.log(`People database refreshed and saved at ${new Date()}`);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+  async refreshPeopleCache() {
+    this.peopleCache.length = 0; // reset our cached people
+    const peopleFromDB = await Person.find();
+    this.peopleCache.push(...(await Array.from(peopleFromDB))); // spread our object into an array
+    return this.peopleCache;
+  }
+
+  async getPersonById(id) {
+    if (this.peopleCache.length < 1) await this.refreshPeopleCache();
+
+    const person = await this.peopleCache.find(person => person._id === id);
+    return person;
+  }
+
+  async getPersonByHeadshotId(id) {
+    if (this.peopleCache.length < 1) await this.refreshPeopleCache();
+
+    const person = await this.peopleCache.find(
+      person => person.headshot.id === id
+    );
+    return person;
+  }
+
+  async personAndHeadshotIdMatch(personId, headshotId) {
+    if (this.peopleCache.length < 1) await this.refreshPeopleCache();
+
+    const person = await getPersonById(personId);
+    return person.headshotId === headshotId;
+  }
+
+  // returns an array of Person[number]
+  async getRandomPersons(number) {
+    if (this.peopleCache.length < 1) await this.refreshPeopleCache();
+
+    const personCount = this.peopleCache.length;
+
+    if (personCount <= number)
+      throw new Error(
+        "PeopleManager: There are fewer (or equal) number of people in the cache than what was requested! Either hire more people or request a lower amount."
+      );
+    let result = [];
+    while (result.length < number) {
+      // generate random numbers, and push people into our array until we have enough
+      // this could get really inefficient if we were always getting close to the number of total people in the DB
+      const index = Math.floor(Math.random() * personCount);
+
+      const someone = this.peopleCache[index];
+      if (!result.includes(someone)) {
+        result.push(someone);
+      }
+    }
+    return result;
+  }
+}
+
+const instance = new PeopleManager();
+Object.freeze(instance);
+
+module.exports = instance;

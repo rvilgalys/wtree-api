@@ -2,9 +2,16 @@ const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+// UserManager is a singleton class for accessing all of the stored Users (currently on MongoDB Atlas)
+// It should be used as the portal for everything in the Users collection
+// It should not depend on any other singletons
+
 class UserManager {
   constructor() {
     if (!UserManager.instance) {
+      // setting up the cache we could choose to schedule a node cron method to refresh the cache
+      // i doubt i'll be doing that here because we're not at that scale yet
+      // and i don't want to somehow bump up to the paid tier of a free Mongo collection
       this.usersCache = User.find()
         .then(users => users)
         .catch(err => console.log(err));
@@ -13,13 +20,18 @@ class UserManager {
     return UserManager.instance;
   }
 
+  // --- access methods for other parts of our app ---
   async getUsers() {
     return await User.find();
   }
   getUsersCache() {
     return this.usersCache;
   }
+  async refreshCache() {
+    this.usersCache = await User.find();
+  }
 
+  // should be called internally by the submitUser method
   async createNewUser(user) {
     let hashedPW;
     if (!user.password) {
@@ -39,7 +51,11 @@ class UserManager {
     return await newUser.save();
   }
 
-  // creates a new
+  // expects an object with { userName, password }
+  // either creates a new user if none exists with the given username, or attempts to validate a user's password if it does
+  // allows for new users with no password
+  // for new users or valid users, returns a fresh JSON token to access the rest of the game
+
   async submitUser(user) {
     const testUser = await User.findOne({ userName: user.userName });
     if (!testUser) {
@@ -51,24 +67,23 @@ class UserManager {
       user.password,
       testUser.password
     );
-
-    const token = await jwt.sign(
-      { userName: testUser.userName, _id: testUser._id },
-      process.env.JWT_KEY,
-      {
-        expiresIn: "6h"
-      }
-    );
-
     if (!validPassword) {
       throw new Error(
         "This user exists and was either created without a password or the incorrect password is supplied."
       );
     }
 
+    const token = await jwt.sign(
+      // if a user is logging in or new, we provide a new token in return
+      { userName: testUser.userName, _id: testUser._id },
+      process.env.JWT_KEY,
+      {
+        expiresIn: process.env.JWT_EXPIRATION.toString()
+      }
+    );
+
     testUser.password = null; // set this to null before giving it back
     testUser.token = token;
-
     return testUser;
   }
 }
