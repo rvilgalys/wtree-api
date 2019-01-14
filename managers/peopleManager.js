@@ -70,9 +70,6 @@ class PeopleManager {
         person => person._id.toString() === id.toString()
       );
     } catch (err) {
-      console.log("getpersonbyid length is : " + this.peopleCache.length);
-      console.log("id:" + id);
-      console.log(err);
       throw err;
     }
   }
@@ -84,8 +81,6 @@ class PeopleManager {
       .find(person => person.headshot.id === id)
       .then(person => person)
       .catch(err => {
-        console.log("getpersonbyheadshotid");
-        console.log(err);
         throw err;
       });
   }
@@ -102,7 +97,6 @@ class PeopleManager {
         );
       })
       .catch(err => {
-        console.log("personAndHeadshotIDMatch " + err);
         throw err;
       });
   }
