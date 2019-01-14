@@ -7,5 +7,7 @@ module.exports = class Answer {
       answered: false,
       correct: false
     };
+    this.clientInstructions =
+      "Submit this template in the body of a POST request (with valid Auth headers) to /game/answer";
   }
 };

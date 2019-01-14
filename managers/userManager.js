@@ -22,8 +22,88 @@ class UserManager {
 
   // --- access methods for other parts of our app ---
   async getUsers() {
-    return await User.find();
+    try {
+      return User.find()
+        .then(users => {
+          return users.map(user => {
+            return {
+              _id: user._id,
+              userName: user.userName,
+              joined: user.joined
+            };
+          });
+        })
+        .catch(err => {
+          throw err;
+        });
+    } catch (err) {
+      console.log(err);
+      return {
+        error: err
+      };
+    }
   }
+
+  async getUsersStats() {
+    try {
+      return User.find()
+        .then(users => {
+          return users.map(user => {
+            return {
+              _id: user._id,
+              userName: user.userName,
+              stats: user.userStats
+            };
+          });
+        })
+        .catch(err => {
+          throw err;
+        });
+    } catch (err) {
+      return {
+        error: err
+      };
+    }
+  }
+
+  async getUserByUsername(userName) {
+    try {
+      return User.findOne({ userName: userName }).then(user => {
+        console.log(user);
+        return {
+          _id: user._id,
+          userName: user.userName,
+          joined: user.joined
+        };
+      });
+    } catch (err) {
+      console.log(err);
+      return {
+        error: err
+      };
+    }
+  }
+
+  async getUserStatsByUsername(userName) {
+    try {
+      return await User.findOne({ userName: userName }).then(user => {
+        return {
+          _id: user._id,
+          userName: user.userName,
+          stats: {
+            percentCorrect: user.userStats.percentCorrect,
+            questionsAnswered: user.userStats.questionsAnswered
+          }
+        };
+      });
+    } catch (err) {
+      console.log(err);
+      return {
+        error: err
+      };
+    }
+  }
+
   getUsersCache() {
     return this.usersCache;
   }
@@ -86,34 +166,42 @@ class UserManager {
     return testUser;
   }
 
-  addUserAnswer(userId, answer) {
+  async addUserAnswer(userId, answer) {
     const newAnswer = {
+      // map over only the data we actually need to a new object
       gameType: answer.gameType,
       faceId: answer.headshotId,
       nameId: answer.nameId,
       correct: answer.answerResult.correct
     };
 
-    const user = User.findById(userId)
+    return await User.findById(userId)
       .then(user => {
+        // first we escape if the User has already answered a question about this person (they still get a response back, but does not count for their stats)
         if (
           user.userStats.prevAnswers
-            .map(answer => answer.nameId)
-            .includes(answer.nameId)
-        ) {
-          return user.save();
-        }
+            .map(prev => prev.nameId)
+            .includes(newAnswer.nameId)
+        )
+          throw new Error("PrevAnswerMatched");
+
+        return user;
       })
       .then(user => {
-        console.log(user);
+        // add our answer to the previous answers for that user
         user.userStats.prevAnswers.push(newAnswer);
+        return user;
+      })
+      .then(user => {
+        // do the stat keeping -- questions answered & % correct
         if (!user.userStats.questionsAnswered)
           user.userStats.questionsAnswered = 0;
         user.userStats.questionsAnswered += 1;
         const correctQuestions = user.userStats.prevAnswers.reduce(
+          // maybe we should just track this number in the DB instead of computing it each time
           (sum, answer) => {
-            if (answer.correct) return 1;
-            return 0;
+            if (answer.correct) return sum + 1;
+            return sum;
           },
           0
         );
@@ -124,10 +212,8 @@ class UserManager {
       })
       .then(user => user.save())
       .catch(err => {
-        throw err;
+        if (!err.message === "PrevAnswerMatched") throw err;
       });
-
-    //return await user.save();
   }
 }
 

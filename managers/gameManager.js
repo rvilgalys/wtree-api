@@ -3,6 +3,11 @@ const UserManager = require("./userManager");
 const Answer = require("../controllers/answerFactory");
 const bcrypt = require("bcrypt");
 
+// the Game Manager is a singleton responsible for handling the game parts of the app
+// it takes data from the PeopleManager, strips out elements that the client shouldn't have, and sends them on
+// it also hashes 'sensitive' data such as headshot IDs to make matching by similar id numbers more difficult
+// it depends on both the UserManager and the PeopleManager
+
 class GameManager {
   constructor() {
     if (!GameManager.instance) {
@@ -11,16 +16,23 @@ class GameManager {
   }
 
   async submitAnswer(userData, answer) {
-    if (!userData) throw new Error("Answer was submitted without User Data");
+    try {
+      if (!userData) throw new Error("Answer was submitted without User Data");
 
-    PeopleManager.personAndHeadshotIdMatch(answer.nameId, answer.headshotIdHash)
-      .then(result => {
-        answer.answerResult.correct = result;
-        UserManager.addUserAnswer(userData._id, answer);
-      })
-      .catch(err => {
-        throw err;
-      });
+      return PeopleManager.personAndHeadshotIdMatch(
+        answer.nameId,
+        answer.headshotIdHash
+      )
+        .then(result => {
+          answer.answerResult.correct = result;
+          return UserManager.addUserAnswer(userData._id, answer);
+        })
+        .catch(err => {
+          throw err;
+        });
+    } catch (err) {
+      throw err;
+    }
   }
 
   // sends 6 names and 1 headshot, the client must pick the correct name

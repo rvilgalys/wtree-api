@@ -5,7 +5,7 @@ const GameManager = require("../../managers/gameManager");
 
 router.get("/", (req, res, next) => {
   res.status(200).json({
-    message: "game-get",
+    message: "game-types",
     facePick: "/game/facepick",
     facePickMattMode: "/game/facepick/mattmode",
     namePick: "/game/namepick",
@@ -16,7 +16,7 @@ router.get("/", (req, res, next) => {
 router.get("/facepick", async (req, res, next) => {
   const gameInfo = await GameManager.facePickGame();
   res.status(200).json({
-    message: "game-get",
+    message: "facepick",
     game: gameInfo
   });
 });
@@ -24,7 +24,7 @@ router.get("/facepick", async (req, res, next) => {
 router.get("/facepick/mattmode", async (req, res, next) => {
   const gameInfo = await GameManager.facePickGame(true);
   res.status(200).json({
-    message: "game-get-facepick-mattmode",
+    message: "facepick-mattmode",
     game: gameInfo
   });
 });
@@ -46,11 +46,19 @@ router.get("/namepick/mattmode", async (req, res, next) => {
 });
 
 router.post("/answer", checkToken, async (req, res, next) => {
-  await GameManager.submitAnswer(req.userData, req.body);
-  res.status(200).json({
-    message: "game-post",
-    data: req.userData
-  });
+  try {
+    await GameManager.submitAnswer(req.userData, req.body).then(user => {
+      res.status(200).json({
+        message: "answer-post",
+        data: req.userData,
+        user
+      });
+    });
+  } catch (err) {
+    res.status(400).json({
+      error: "Answer submission was invalid!"
+    });
+  }
 });
 
 module.exports = router;

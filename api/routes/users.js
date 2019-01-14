@@ -4,20 +4,54 @@ const userManager = require("../../managers/userManager");
 const router = express.Router();
 
 router.get("/", async (req, res, next) => {
-  const users = await userManager.getUsers();
-  res.status(200).json({
-    message: "users-get",
-    users
-  });
+  await userManager
+    .getUsers()
+    .then(users => {
+      res.status(200).json({
+        message: "users-get",
+        users
+      });
+    })
+    .catch(err => {
+      res.status(500).json({
+        error: err
+      });
+    });
 });
 
-router.get("/:username", (req, res, next) => {
-  const username = req.params.username;
-  // connect to userManager here
+router.get("/:username", async (req, res, next) => {
+  try {
+    const username = req.params.username;
+    userManager.getUserByUsername(username).then(user => {
+      res.status(200).json({
+        message: `${username}'s info`,
+        userStats: `/users/${username}/stats`,
+        user: user
+      });
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(404).json({
+      error: err
+    });
+  }
+});
 
-  res.status(200).json({
-    message: `${username}'s info`
-  });
+router.get("/:username/stats", async (req, res, next) => {
+  try {
+    const username = req.params.username;
+    const user = await userManager.getUserStatsByUsername(username);
+
+    res.status(200).json({
+      message: `${username}'s stats`,
+      user: user
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(404).json({
+      error: err
+    });
+  }
 });
 
 router.post("/:username", async (req, res, next) => {

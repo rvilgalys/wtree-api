@@ -65,11 +65,14 @@ class PeopleManager {
   }
 
   async getPersonById(id) {
-    if (this.peopleCache.length < 1) await this.refreshPeopleCache();
-    console.log(id);
-    return this.peopleCache.find(
-      person => person._id.toString() === id.toString()
-    );
+    try {
+      if (this.peopleCache.length < 1) await this.refreshPeopleCache();
+      return this.peopleCache.find(
+        person => person._id.toString() === id.toString()
+      );
+    } catch (err) {
+      throw err;
+    }
   }
 
   async getPersonByHeadshotId(id) {
@@ -88,6 +91,7 @@ class PeopleManager {
 
     return this.getPersonById(personId)
       .then(person => {
+        if (!person) throw new Error("No Valid Person Found");
         return bcrypt.compare(person.headshot._id.toString(), headshotIdHash);
       })
       .catch(err => {
