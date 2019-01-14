@@ -3,6 +3,7 @@ const router = express.Router();
 const PeopleManager = require("../../managers/peopleManager");
 
 // this path is only being used to test the PeopleManager, it would be disabled in the production branch
+// i'm leaving it up right now in the demo, just to show part of the process
 
 router.get("/", async (req, res, next) => {
   try {

@@ -1,0 +1,265 @@
+{
+	"info": {
+		"_postman_id": "f5c702df-8df4-44e5-a820-1f055d5c24ab",
+		"name": "WillowTree NameGame",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "https://rocky-plateau-26626.herokuapp.com/game/answer",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6InJpbSIsIl9pZCI6IjVjM2NiMTg5ZmQ3ZWIyYjZhZDY0N2ZhMiIsImlhdCI6MTU0NzQ4Njk3MSwiZXhwIjoxNTQ3NTA4NTcxfQ.BWj5YljiFPGSw2qtc0uycBKuIKGr-21TcnMIg70a-_U",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n            \"nameId\": \"5c3c17509513249d162d329e\",\n            \"headshotIdHash\": \"$2b$12$37DAvMB8H4QcRPmDfVL51OAorGKcAcWV2jgljzS2DwWMIVBM90a8K\",\n            \"gameType\": \"facePick\",\n            \"answerResult\": {\n                \"answered\": false,\n                \"correct\": false\n            },\n            \"clientInstructions\": \"Submit this template in the body of a POST request (with valid Auth headers) to /game/answer\"\n        }"
+				},
+				"url": {
+					"raw": "https://rocky-plateau-26626.herokuapp.com/game/answer",
+					"protocol": "https",
+					"host": [
+						"rocky-plateau-26626",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"game",
+						"answer"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://rocky-plateau-26626.herokuapp.com/game/facepick",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://rocky-plateau-26626.herokuapp.com/game/facepick",
+					"protocol": "https",
+					"host": [
+						"rocky-plateau-26626",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"game",
+						"facepick"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://rocky-plateau-26626.herokuapp.com/game",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://rocky-plateau-26626.herokuapp.com/game",
+					"protocol": "https",
+					"host": [
+						"rocky-plateau-26626",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"game"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://rocky-plateau-26626.herokuapp.com/users/rim",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6InJpbSIsIl9pZCI6IjVjM2NiMTg5ZmQ3ZWIyYjZhZDY0N2ZhMiIsImlhdCI6MTU0NzQ4NTQ4MCwiZXhwIjoxNTQ3NTA3MDgwfQ.mtDJFs6t8GshZvwiA3fTQDnryxa25Mt--mAbYXfdP_E",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"password\": \"rim\"\n}"
+				},
+				"url": {
+					"raw": "https://rocky-plateau-26626.herokuapp.com/users/rim",
+					"protocol": "https",
+					"host": [
+						"rocky-plateau-26626",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"users",
+						"rim"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://rocky-plateau-26626.herokuapp.com/",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://rocky-plateau-26626.herokuapp.com/",
+					"protocol": "https",
+					"host": [
+						"rocky-plateau-26626",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://rocky-plateau-26626.herokuapp.com/stats",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://rocky-plateau-26626.herokuapp.com/stats",
+					"protocol": "https",
+					"host": [
+						"rocky-plateau-26626",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"stats"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://rocky-plateau-26626.herokuapp.com/users",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://rocky-plateau-26626.herokuapp.com/users/rim",
+					"protocol": "https",
+					"host": [
+						"rocky-plateau-26626",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"users",
+						"rim"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://rocky-plateau-26626.herokuapp.com/users/rim/stats",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://rocky-plateau-26626.herokuapp.com/users/rim/stats",
+					"protocol": "https",
+					"host": [
+						"rocky-plateau-26626",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"users",
+						"rim",
+						"stats"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://rocky-plateau-26626.herokuapp.com/users",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://rocky-plateau-26626.herokuapp.com/users",
+					"protocol": "https",
+					"host": [
+						"rocky-plateau-26626",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

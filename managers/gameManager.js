@@ -102,15 +102,11 @@ class GameManager {
       );
       //const hashedNameId = await bcrypt.hash(person._id.toString(), 12);
       return {
-        headshot: {
-          _id: hashedHeadshotId,
-          mimeType: person.headshot.mimeType,
-          imageUrl: person.headshot.imageUrl,
-          height: person.headshot.height,
-          width: person.headshot.width
-        },
-        name: null
-        //_id: hashedNameId
+        _id: hashedHeadshotId,
+        mimeType: person.headshot.mimeType,
+        imageUrl: person.headshot.imageUrl,
+        height: person.headshot.height,
+        width: person.headshot.width
       };
     });
     return await Promise.all(hashedPeople); // resolve all our promises
