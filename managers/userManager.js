@@ -55,7 +55,6 @@ class UserManager {
   // either creates a new user if none exists with the given username, or attempts to validate a user's password if it does
   // allows for new users with no password
   // for new users or valid users, returns a fresh JSON token to access the rest of the game
-
   async submitUser(user) {
     const testUser = await User.findOne({ userName: user.userName });
     if (!testUser) {
@@ -85,6 +84,50 @@ class UserManager {
     testUser.password = null; // set this to null before giving it back
     testUser.token = token;
     return testUser;
+  }
+
+  addUserAnswer(userId, answer) {
+    const newAnswer = {
+      gameType: answer.gameType,
+      faceId: answer.headshotId,
+      nameId: answer.nameId,
+      correct: answer.answerResult.correct
+    };
+
+    const user = User.findById(userId)
+      .then(user => {
+        if (
+          user.userStats.prevAnswers
+            .map(answer => answer.nameId)
+            .includes(answer.nameId)
+        ) {
+          return user.save();
+        }
+      })
+      .then(user => {
+        console.log(user);
+        user.userStats.prevAnswers.push(newAnswer);
+        if (!user.userStats.questionsAnswered)
+          user.userStats.questionsAnswered = 0;
+        user.userStats.questionsAnswered += 1;
+        const correctQuestions = user.userStats.prevAnswers.reduce(
+          (sum, answer) => {
+            if (answer.correct) return 1;
+            return 0;
+          },
+          0
+        );
+        user.userStats.percentCorrect = Math.floor(
+          (correctQuestions / user.userStats.questionsAnswered) * 100
+        );
+        return user;
+      })
+      .then(user => user.save())
+      .catch(err => {
+        throw err;
+      });
+
+    //return await user.save();
   }
 }
 

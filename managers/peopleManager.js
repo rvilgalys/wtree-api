@@ -2,11 +2,19 @@ const axios = require("axios");
 const mongoose = require("mongoose");
 const Person = require("../models/person");
 const cron = require("node-cron");
+const bcrypt = require("bcrypt");
 
 const sourceUrl = "http://www.willowtreeapps.com/api/v1.0/profiles";
 
+// PeopleManager is a singleton class responsible for populating, refreshing, and accessing our People collection of names and faces
+// It simplfies the data provided, and generates new IDs for users and headshots (assuming clever devs might use the original data to increase their score if those were provided)
+// Since WillowTree is hiring it runs a node-cron to refresh from the JSON data every day at midnight
+// It also keeps a local cache of all the People for faster access
+// Because generated ObjectIDs() are very close to one another, we should hash them before sending to the client to further obfusticate and prevent cheating
+
 class PeopleManager {
   constructor() {
+    // singleton pattern
     if (!PeopleManager.instance) {
       PeopleManager.instance = this;
       this.peopleCache = [];
@@ -14,7 +22,7 @@ class PeopleManager {
       cron.schedule("0 0 0 * * *", async () => {
         // should run every day at midnight (assuming turnover isn't that frequent haha)
         await this.refreshPeopleDB();
-        peopleCache = await Person.find();
+        await this.refreshPeopleCache();
       });
     }
     return PeopleManager.instance;
@@ -33,7 +41,7 @@ class PeopleManager {
           name: `${entry.firstName} ${entry.lastName}`,
           jobTitle: entry.jobTitle || "",
           headshot: {
-            _id: mongoose.Types.ObjectId(),
+            _id: new mongoose.Types.ObjectId(),
             mimeType: entry.headshot.mimeType,
             imageUrl: entry.headshot.url,
             height: entry.headshot.height,
@@ -58,32 +66,43 @@ class PeopleManager {
 
   async getPersonById(id) {
     if (this.peopleCache.length < 1) await this.refreshPeopleCache();
-
-    const person = await this.peopleCache.find(person => person._id === id);
-    return person;
+    console.log(id);
+    return this.peopleCache.find(
+      person => person._id.toString() === id.toString()
+    );
   }
 
   async getPersonByHeadshotId(id) {
     if (this.peopleCache.length < 1) await this.refreshPeopleCache();
 
-    const person = await this.peopleCache.find(
-      person => person.headshot.id === id
-    );
-    return person;
+    return this.peopleCache
+      .find(person => person.headshot.id === id)
+      .then(person => person)
+      .catch(err => {
+        throw err;
+      });
   }
 
-  async personAndHeadshotIdMatch(personId, headshotId) {
+  async personAndHeadshotIdMatch(personId, headshotIdHash) {
     if (this.peopleCache.length < 1) await this.refreshPeopleCache();
 
-    const person = await getPersonById(personId);
-    return person.headshotId === headshotId;
+    return this.getPersonById(personId)
+      .then(person => {
+        return bcrypt.compare(person.headshot._id.toString(), headshotIdHash);
+      })
+      .catch(err => {
+        throw err;
+      });
   }
 
   // returns an array of Person[number]
-  async getRandomPersons(number) {
+  // args: number of people to return, exclusions[] of ids already matched
+  async getRandomPersons(number = 6, mattMode = false) {
     if (this.peopleCache.length < 1) await this.refreshPeopleCache();
 
-    const personCount = this.peopleCache.length;
+    const peopleArray = await this.doMattMode(mattMode);
+
+    const personCount = peopleArray.length;
 
     if (personCount <= number)
       throw new Error(
@@ -95,12 +114,33 @@ class PeopleManager {
       // this could get really inefficient if we were always getting close to the number of total people in the DB
       const index = Math.floor(Math.random() * personCount);
 
-      const someone = this.peopleCache[index];
+      const someone = peopleArray[index];
       if (!result.includes(someone)) {
         result.push(someone);
       }
     }
     return result;
+  }
+
+  async doMattMode(mattMode) {
+    const peopleArray = [];
+    if (mattMode) {
+      peopleArray.push(
+        ...(await this.peopleCache.filter(person => {
+          if (
+            person.name.includes("Matt ") ||
+            person.name.includes("Matthew ") ||
+            person.name.includes("Mat ")
+          ) {
+            return true;
+          }
+        }))
+      );
+    } else {
+      await peopleArray.push(...this.peopleCache);
+    }
+    await Promise.all(peopleArray);
+    return peopleArray;
   }
 }
 

@@ -28,7 +28,7 @@ const userSchema = new Schema({
       max: 100
     },
     questionsAnswered: Number,
-    prevAnwers: [answerSchema] // stored to make sure a user cannot ping the server over and over with a correct answer
+    prevAnswers: [answerSchema] // stored to make sure a user cannot ping the server over and over with a correct answer
   }
 });
 
