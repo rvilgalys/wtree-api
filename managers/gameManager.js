@@ -1,6 +1,6 @@
 const PeopleManager = require("./peopleManager");
 const UserManager = require("./userManager");
-const Answer = require("../controllers/answerFactory");
+const Answer = require("../factories/answerFactory");
 const bcrypt = require("bcrypt");
 
 // the Game Manager is a singleton responsible for handling the game parts of the app
