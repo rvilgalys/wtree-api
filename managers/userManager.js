@@ -113,22 +113,36 @@ class UserManager {
 
   // should be called internally by the submitUser method
   async createNewUser(user) {
-    let hashedPW;
-    if (!user.password) {
-      console.log("User being created with no password");
-      // password is not required for one time logins, so we will just use the date instead
-      const dateString = new Date().toISOString();
-      hashedPW = await bcrypt.hash(dateString, 12);
-    } else {
-      hashedPW = await bcrypt.hash(user.password, 12);
+    try {
+      let hashedPW;
+      if (!user.password) {
+        console.log("User being created with no password");
+        // password is not required for one time logins, so we will just use the date instead
+        const dateString = new Date().toISOString();
+        hashedPW = await bcrypt.hash(dateString, 12);
+      } else {
+        hashedPW = await bcrypt.hash(user.password, 12);
+      }
+      const token = jwt.sign(
+        // if a user is logging in or new, we provide a new token in return
+        { userName: user.userName, _id: user._id },
+        process.env.JWT_KEY,
+        {
+          expiresIn: process.env.JWT_EXPIRATION.toString()
+        }
+      );
+      console.log(token);
+      const newUser = new User({
+        userName: user.userName,
+        password: hashedPW,
+        joined: new Date()
+      });
+      await newUser.save();
+      newUser.token = token;
+      return newUser;
+    } catch (err) {
+      throw err;
     }
-
-    const newUser = new User({
-      userName: user.userName,
-      password: hashedPW,
-      joined: new Date()
-    });
-    return await newUser.save();
   }
 
   // expects an object with { userName, password }
@@ -152,7 +166,7 @@ class UserManager {
       );
     }
 
-    const token = await jwt.sign(
+    const token = jwt.sign(
       // if a user is logging in or new, we provide a new token in return
       { userName: testUser.userName, _id: testUser._id },
       process.env.JWT_KEY,
