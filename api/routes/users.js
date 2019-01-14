@@ -8,7 +8,7 @@ router.get("/", async (req, res, next) => {
     .getUsers()
     .then(users => {
       res.status(200).json({
-        message: "users-get",
+        message: "users",
         users
       });
     })
