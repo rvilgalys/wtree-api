@@ -70,7 +70,8 @@ class PeopleManager {
         person => person._id.toString() === id.toString()
       );
     } catch (err) {
-      console.log("getpersonbyid");
+      console.log("getpersonbyid length is : " + this.peopleCache.length);
+      console.log("id:" + id);
       console.log(err);
       throw err;
     }
