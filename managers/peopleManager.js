@@ -60,14 +60,13 @@ class PeopleManager {
   async refreshPeopleCache() {
     this.peopleCache.length = 0; // reset our cached people
     const peopleFromDB = await Person.find();
-    this.peopleCache.push(...(await Array.from(peopleFromDB))); // spread our object into an array
-    return this.peopleCache;
+    return await this.peopleCache.push(...Array.from(peopleFromDB)); // spread our object into an array
   }
 
   async getPersonById(id) {
     try {
       if (this.peopleCache.length < 1) await this.refreshPeopleCache();
-      return this.peopleCache.find(
+      return await this.peopleCache.find(
         person => person._id.toString() === id.toString()
       );
     } catch (err) {
