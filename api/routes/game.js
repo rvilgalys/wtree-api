@@ -83,7 +83,7 @@ router.post("/answer", checkToken, async (req, res, next) => {
     });
   } catch (err) {
     res.status(400).json({
-      error: "Answer submission was invalid!"
+      error: err.message
     });
   }
 });
