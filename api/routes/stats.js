@@ -7,7 +7,13 @@ router.get("/", (req, res, next) => {
     StatManager.getLeaderboard().then(leaderboard => {
       res.status(200).json({
         message: "leaderboard",
-        leaderboard
+        leaderboard: leaderboard.map(entry => {
+          return {
+            _id: entry._id,
+            user: `/users/${entry.userName}`,
+            stats: entry.stats
+          };
+        })
       });
     });
   } catch (err) {

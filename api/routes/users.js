@@ -9,7 +9,13 @@ router.get("/", async (req, res, next) => {
     .then(users => {
       res.status(200).json({
         message: "users",
-        users
+        users: users.map(user => {
+          return {
+            _id: user._id.toString(),
+            user: `/users/${user.userName}`,
+            joined: user.joined
+          };
+        })
       });
     })
     .catch(err => {
